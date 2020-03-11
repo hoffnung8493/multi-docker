@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t sihoon/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run sihoon/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t sihoon/multi-client ./client
+  - docker build -t sihoon/multi-nginx ./nginx
+  - docker build -t sihoon/multi-server ./server
+  - docker build -t sihoon/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push sihoon/multi-client
+  - docker push sihoon/multi-nginx
+  - docker push sihoon/multi-server
+  - docker push sihoon/multi-worker
